@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class BlockScript : MonoBehaviour
@@ -10,6 +11,7 @@ public class BlockScript : MonoBehaviour
     public int hitsToDestroy;
     public int points;
     PlayerScript playerScript;
+    public GameObject bonusPrefab;
 
     // Start is called before the first frame update
     void Start()
@@ -27,6 +29,11 @@ public class BlockScript : MonoBehaviour
         hitsToDestroy--;
         if (hitsToDestroy == 0)
         {
+            if (gameObject.name.StartsWith("GreenBlock"))
+            {
+                var bonus = Instantiate(bonusPrefab, transform.position, Quaternion.identity);
+                var bonusBase = bonus.AddComponent<BonusBase>();
+            }
             Destroy(gameObject);
             playerScript.BlockDestroyed(points);
         }
