@@ -13,6 +13,14 @@ public class BallScript : MonoBehaviour
     public AudioClip loseSound;
     public GameDataScript gameData;
 
+    public Sprite normSprite;
+    public Sprite fireSprite;
+    public Sprite steelSprite;
+
+    public int damage;
+
+    private SpriteRenderer spriteRenderer;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -20,6 +28,8 @@ public class BallScript : MonoBehaviour
         playerObj = GameObject.FindGameObjectWithTag("Player");
         deltaX = transform.position.x;
         audioSrc = Camera.main.GetComponent<AudioSource>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        damage = 1;
     }
 
     // Update is called once per frame
@@ -53,12 +63,31 @@ public class BallScript : MonoBehaviour
         if (gameData.sound)
             audioSrc.PlayOneShot(loseSound, 5);
         Destroy(gameObject);
-        playerObj.GetComponent<PlayerScript>().BallDestroyed();
+        playerObj.GetComponent<PlayerScript>().BallDestroyed(GetInstanceID());
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (gameData.sound)
             audioSrc.PlayOneShot(hitSound, 5);
+    }
+
+    public void ChangeMaterial(BallMaterial material)
+    {
+        switch (material)
+        {
+            case BallMaterial.Norm:
+                spriteRenderer.sprite = normSprite;
+                damage = 1;
+                break;
+            case BallMaterial.Fire:
+                spriteRenderer.sprite = fireSprite;
+                damage = 4;
+                break;
+            case BallMaterial.Steel:
+                spriteRenderer.sprite = steelSprite;
+                damage = 40;
+                break;
+        }
     }
 }

@@ -3,7 +3,13 @@ guid: db555517f80c0674c8ec3edf27fc1950
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - hitSound: {instanceID: 0}
+  - loseSound: {instanceID: 0}
+  - gameData: {instanceID: 0}
+  - normSprite: {fileID: 21300000, guid: 63255e64f95c87945949fe6497e72cd9, type: 3}
+  - fireSprite: {fileID: 21300000, guid: 672ebf9e4b70b8b4c87615b980c53e7a, type: 3}
+  - steelSprite: {fileID: 21300000, guid: f050a346aeaf332488c3d432d6b922f9, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
