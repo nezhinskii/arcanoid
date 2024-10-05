@@ -22,16 +22,19 @@ public class BlockScript : MonoBehaviour
         playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
+    virtual public void OnCollisionEnter2D(Collision2D collision)
     {
-        hitsToDestroy--;
-        if (hitsToDestroy == 0)
+        if(collision.gameObject.tag == "Ball")
         {
-            Destroy(gameObject);
-            playerScript.BlockDestroyed(points);
+            hitsToDestroy--;
+            if (hitsToDestroy == 0)
+            {
+                Destroy(gameObject);
+                playerScript.BlockDestroyed(points);
+            }
+            else if (textComponent != null)
+                textComponent.text = hitsToDestroy.ToString();
         }
-        else if (textComponent != null)
-            textComponent.text = hitsToDestroy.ToString();
     }
 
 
