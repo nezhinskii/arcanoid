@@ -1,6 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
+
+[System.Serializable]
+public struct PlayerScore
+{
+    public string playerName;
+    public int score;
+}
 
 [CreateAssetMenu(fileName = "GameData", menuName = "Game Data", order = 51)]
 public class GameDataScript : ScriptableObject
@@ -12,7 +20,9 @@ public class GameDataScript : ScriptableObject
     public bool music = true;
     public bool sound = true;
     public int pointsToBall = 0;
+    public string playerName = "Player";
 
+    public PlayerScore[] topScores = new PlayerScore[5];
 
     public void Reset()
     {
@@ -30,6 +40,12 @@ public class GameDataScript : ScriptableObject
         PlayerPrefs.SetInt("pointsToBall", pointsToBall);
         PlayerPrefs.SetInt("music", music ? 1 : 0);
         PlayerPrefs.SetInt("sound", sound ? 1 : 0);
+
+        for (int i = 0; i < topScores.Length; i++)
+        {
+            PlayerPrefs.SetString("playerName" + i, topScores[i].playerName);
+            PlayerPrefs.SetInt("playerScore" + i, topScores[i].score);
+        }
     }
 
     public void Load()
@@ -40,6 +56,40 @@ public class GameDataScript : ScriptableObject
         pointsToBall = PlayerPrefs.GetInt("pointsToBall", 0);
         music = PlayerPrefs.GetInt("music", 1) == 1;
         sound = PlayerPrefs.GetInt("sound", 1) == 1;
+
+        for (int i = 0; i < topScores.Length; i++)
+        {
+            topScores[i].playerName = PlayerPrefs.GetString("playerName" + i, "");
+            topScores[i].score = PlayerPrefs.GetInt("playerScore" + i, 0);
+        }
+    }
+
+    public void UpdateScores()
+    {
+        List<(string pName, int scr)> topScoresList = new List<(string, int)>();
+
+        for (int i = 0; i < topScores.Length; i++)
+        {
+            topScoresList.Add((topScores[i].playerName, topScores[i].score));
+        }
+        topScoresList.Add((playerName, points));
+        topScoresList = topScoresList.OrderByDescending(x => x.scr).ToList();
+
+        for (int i = 0; i < topScores.Length; i++)
+        {
+            if (i < topScoresList.Count)
+            {
+                topScores[i].playerName = topScoresList[i].pName;
+                topScores[i].score = topScoresList[i].scr;
+            }
+            else
+            {
+                topScores[i].playerName = "";
+                topScores[i].score = 0;
+            }
+        }
+
+        Save();
     }
 }
 

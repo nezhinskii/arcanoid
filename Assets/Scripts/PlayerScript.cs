@@ -6,93 +6,107 @@ using UnityEngine.SceneManagement;
 public class PlayerScript : MonoBehaviour
 {
     public GameDataScript gameData;
-    static bool gameStarted = false;
     const int maxLevel = 30;
     [Range(1, maxLevel)]
     public int level = 1;
     AudioSource audioSrc;
     public AudioClip pointSound;
+    private GameManager gameManager;
 
-    string OnOff(bool boolVal)
+    private void OnEnable()
     {
-        return boolVal ? "on" : "off";
-    }
-
-    void OnGUI()
-    {
-        GUI.Label(new Rect(5, 4, Screen.width - 10, 100),
-            string.Format(
-                "<color=yellow><size=30>Level <b>{0}</b> Balls <b>{1}</b>" +
-                " Score <b>{2}</b></size></color>", gameData.level, gameData.balls, gameData.points
-            )
-        );
-        GUIStyle style = new GUIStyle();
-        style.alignment = TextAnchor.UpperRight;
-        GUI.Label(new Rect(5, 14, Screen.width - 10, 100),
-            string.Format(
-                "<color=yellow><size=20><color=white>Space</color>-pause {0}" +
-                " <color=white>N</color>-new" +
-                " <color=white>J</color>-jump" +
-                " <color=white>M</color>-music {1}" +
-                " <color=white>S</color>-sound {2}" +
-                " <color=white>Esc</color>-exit</size></color>",
-                OnOff(Time.timeScale > 0), OnOff(!gameData.music),
-                OnOff(!gameData.sound)
-            ), style
-        );
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        audioSrc = Camera.main.GetComponent<AudioSource>();
-        Cursor.visible = false;
-        if (!gameStarted)
+        if (GameManager.Instance != null)
         {
-            gameStarted = true;
-            if (gameData.resetOnStart)
-                gameData.Load();
+            GameManager.Instance.OnGameStateChanged += HandleGameStateChanged;
         }
-        level = gameData.level;
-        SetMusic();
-        StartLevel();
+        else
+        {
+            StartCoroutine(WaitForGameManager());
+        }
+    }
+    private IEnumerator WaitForGameManager()
+    {
+        while (GameManager.Instance == null)
+        {
+            yield return null;
+        }
+
+        GameManager.Instance.OnGameStateChanged += HandleGameStateChanged;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnDisable()
     {
-        if (Input.GetButtonDown("Pause"))
-            if (Time.timeScale > 0)
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnGameStateChanged -= HandleGameStateChanged;
+        }
+    }
+
+    private void HandleGameStateChanged(GameState newGameState)
+    {
+        switch (newGameState)
+        {
+            case GameState.MainMenu:
                 Time.timeScale = 0;
-            else
+                break;
+            case GameState.Paused:
+                Time.timeScale = 0;
+                break;
+            case GameState.GameOver:
+                Time.timeScale = 0;
+                break;
+            case GameState.Playing:
+                if (gameManager.PreviousGameState != GameState.Paused)
+                {
+                    StartLevel();
+                }
                 Time.timeScale = 1;
-        if (Time.timeScale > 0)
-        {
-            var mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            var pos = transform.position;
-            pos.x = mousePos.x;
-            transform.position = pos;
+                break;
+            default:
+                
+                break;
         }
+    }
+
+    void Start()
+    { 
+        gameManager = GameManager.Instance;
+        HandleGameStateChanged(gameManager.CurrentGameState);
+    }
+
+    void Update()
+    {   
+        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetButtonDown("Pause"))
+        {
+            if (gameManager.CurrentGameState == GameState.Playing)
+                gameManager.SetGameState(GameState.Paused);
+            else
+                gameManager.SetGameState(GameState.Playing);
+        }
+
+        if (gameManager.CurrentGameState != GameState.Playing) return;
+
+        var mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        var pos = transform.position;
+        pos.x = mousePos.x;
+        transform.position = pos;
+
         if (Input.GetKeyDown(KeyCode.M))
         {
             gameData.music = !gameData.music;
             SetMusic();
         }
-        if (Input.GetKeyDown(KeyCode.S))
-            gameData.sound = !gameData.sound;
 
-        if (Input.GetKeyDown(KeyCode.N))
+        if (Input.GetKeyDown(KeyCode.S)) 
         {
-            gameData.Reset();
-            SceneManager.LoadScene("MainScene");
+            gameData.sound = !gameData.sound;
         }
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            Application.Quit();
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#endif
-        }
+
+        // if (Input.GetKeyDown(KeyCode.N))
+        // {
+        //     gameData.Reset();
+        //     SceneManager.LoadScene("MainScene");
+        // }
     }
 
     public float ballVelocityMult = 0.02f;
@@ -138,8 +152,17 @@ public class PlayerScript : MonoBehaviour
         bg.sprite = Resources.Load(level.ToString("d2"), typeof(Sprite)) as Sprite;
     }
 
-    void StartLevel()
+    public void StartLevel()
     {
+        var blocks = GameObject.FindGameObjectsWithTag("Ball");
+        for (int i = 0; i < blocks.Length; i++)
+        {
+            Destroy(blocks[i]);
+        }
+       
+        audioSrc = Camera.main.GetComponent<AudioSource>();
+        level = gameData.level;
+        SetMusic();
         SetBackground();
         var yMax = Camera.main.orthographicSize * 0.8f;
         var xMax = Camera.main.orthographicSize * Camera.main.aspect * 0.85f;
@@ -157,10 +180,7 @@ public class PlayerScript : MonoBehaviour
             if (gameData.balls > 0)
                 CreateBalls();
             else
-            {
-                gameData.Reset();
-                SceneManager.LoadScene("MainScene");
-            }
+                gameManager.SetGameState(GameState.GameOver);
     }
 
     public void BallDestroyed()
@@ -176,7 +196,7 @@ public class PlayerScript : MonoBehaviour
         {
             if (level < maxLevel)
                 gameData.level++;
-            SceneManager.LoadScene("MainScene");
+            gameManager.SetGameState(GameState.GameOver);
         }
     }
 
@@ -214,10 +234,5 @@ public class PlayerScript : MonoBehaviour
     }
 
     int requiredPointsToBall{ get { return 400 + (level - 1) * 20; } }
-
-    void OnApplicationQuit()
-    {
-        gameData.Save();
-    }
 
 }
