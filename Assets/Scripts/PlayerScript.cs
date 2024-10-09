@@ -11,6 +11,7 @@ public class PlayerScript : MonoBehaviour
     public int level = 1;
     AudioSource audioSrc;
     public AudioClip pointSound;
+    public Dictionary<int, BallScript> ballScripts = new Dictionary<int, BallScript>();
     private GameManager gameManager;
 
     private void OnEnable()
@@ -141,6 +142,7 @@ public class PlayerScript : MonoBehaviour
         {
             var obj = Instantiate(ballPrefab);
             var ball = obj.GetComponent<BallScript>();
+            ballScripts[ball.GetInstanceID()] = ball;
             ball.ballInitialForce += new Vector2(10 * i, 0);
             ball.ballInitialForce *= 1 + level * ballVelocityMult;
         }
@@ -183,9 +185,10 @@ public class PlayerScript : MonoBehaviour
                 gameManager.SetGameState(GameState.GameOver);
     }
 
-    public void BallDestroyed()
+    public void BallDestroyed(int ballId)
     {
         gameData.balls--;
+        Debug.Log(ballScripts.Remove(ballId));
         StartCoroutine(BallDestroyedCoroutine());
     }
 
@@ -212,6 +215,14 @@ public class PlayerScript : MonoBehaviour
     public void AddPoints(int points)
     {
         gameData.points += points;
+    }
+
+    public void ChangeBallsMaterial(BallMaterial material)
+    {
+        foreach(BallScript ball in ballScripts.Values)
+        {
+            ball.ChangeMaterial(material);
+        }
     }
 
     public void BlockDestroyed(int points)

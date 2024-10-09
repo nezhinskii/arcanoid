@@ -5,12 +5,20 @@ using UnityEngine;
 
 public class BonusBase : MonoBehaviour
 {
+    public Color spriteColor;
+    public Color textColor;
+    public string text;
     private float speed = -5;
-    public Color spriteColor = Color.yellow;
-    public Color textColor = Color.black;
-    public string text = "+100";
     TMP_Text textComponent;
-    PlayerScript playerScript;
+    protected PlayerScript playerScript;
+
+    virtual public void SetUp()
+    {
+        spriteColor = Color.yellow;
+        textColor = Color.black;
+        text = "+100";
+    }
+    
     void Start()
     {
         textComponent = GetComponentInChildren<TMP_Text>();

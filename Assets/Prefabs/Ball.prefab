@@ -140,3 +140,7 @@ MonoBehaviour:
   hitSound: {fileID: 8300000, guid: 31d1fe5ad335a67469b8f5dbff2442e5, type: 3}
   loseSound: {fileID: 8300000, guid: a7df7b47d38aa7841abc78a57b1ad5a8, type: 3}
   gameData: {fileID: 11400000, guid: f260205cade46764f9a549fc2db06232, type: 2}
+  normSprite: {fileID: 21300000, guid: 63255e64f95c87945949fe6497e72cd9, type: 3}
+  fireSprite: {fileID: 21300000, guid: 672ebf9e4b70b8b4c87615b980c53e7a, type: 3}
+  steelSprite: {fileID: 21300000, guid: f050a346aeaf332488c3d432d6b922f9, type: 3}
+  damage: 0

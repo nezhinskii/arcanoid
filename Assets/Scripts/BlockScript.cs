@@ -26,19 +26,43 @@ public class BlockScript : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        hitsToDestroy--;
-        if (hitsToDestroy == 0)
+        if (collision.gameObject.tag == "Ball")
         {
-            if (gameObject.name.StartsWith("GreenBlock"))
+
+            hitsToDestroy -= collision.gameObject.GetComponent<BallScript>().damage;
+            if (hitsToDestroy <= 0)
             {
-                var bonus = Instantiate(bonusPrefab, transform.position, Quaternion.identity);
-                var bonusBase = bonus.AddComponent<BonusBase>();
+                if (gameObject.name.StartsWith("GreenBlock"))
+                {
+                    var bonus = Instantiate(bonusPrefab, transform.position, Quaternion.identity);
+                    BonusBase bonusBase;
+                    int i = Random.Range(0, 4);
+                    switch (i)
+                    {
+                        case 0:
+                            bonusBase = bonus.AddComponent<BonusBase>();
+                            break;
+                        case 1:
+                            bonusBase = bonus.AddComponent<BonusNormMaterial>();
+                            break;
+                        case 2:
+                            bonusBase = bonus.AddComponent<BonusFireMaterial>();
+                            break;
+                        case 3:
+                            bonusBase = bonus.AddComponent<BonusSteelMaterial>();
+                            break;
+                        default:
+                            bonusBase = bonus.AddComponent<BonusBase>();
+                            break;
+                    }
+                    bonusBase.SetUp();
+                }
+                Destroy(gameObject);
+                playerScript.BlockDestroyed(points);
             }
-            Destroy(gameObject);
-            playerScript.BlockDestroyed(points);
+            else if (textComponent != null)
+                textComponent.text = hitsToDestroy.ToString();
         }
-        else if (textComponent != null)
-            textComponent.text = hitsToDestroy.ToString();
     }
 
 
