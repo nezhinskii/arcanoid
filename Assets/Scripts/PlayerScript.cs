@@ -209,6 +209,11 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
+    public void AddPoints(int points)
+    {
+        gameData.points += points;
+    }
+
     public void BlockDestroyed(int points)
     {
         gameData.points += points;
