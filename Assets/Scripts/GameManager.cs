@@ -42,4 +42,9 @@ public class GameManager : MonoBehaviour
         OnGameStateChanged?.Invoke(newGameState);
         Debug.Log("Game State changed to: " + newGameState);
     }
+
+    public void SetPrevGameState(GameState newGameState)
+    {
+        PreviousGameState = newGameState;
+    }
 }

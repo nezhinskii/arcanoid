@@ -14,7 +14,7 @@ public class BlockScript : MonoBehaviour
     public GameObject bonusPrefab;
 
     // Start is called before the first frame update
-    void Start()
+    virtual public void Start()
     {
         if (textObject != null)
         {

@@ -72,6 +72,7 @@ public class PlayerScript : MonoBehaviour
     void Start()
     { 
         gameManager = GameManager.Instance;
+        audioSrc = Camera.main.GetComponent<AudioSource>();
         HandleGameStateChanged(gameManager.CurrentGameState);
     }
 
@@ -152,21 +153,38 @@ public class PlayerScript : MonoBehaviour
     void SetBackground()
     {
         var bg = GameObject.Find("Background").GetComponent<SpriteRenderer>();
+        Debug.Log(bg);
+        Debug.Log(level.ToString("d2"));
         bg.sprite = Resources.Load(level.ToString("d2"), typeof(Sprite)) as Sprite;
     }
 
-    public void StartLevel()
+    public void StartLevel(bool next = false)
     {
-        var blocks = GameObject.FindGameObjectsWithTag("Ball");
+        if (!next) {
+            SetMusic();
+        }
+        level = gameData.level;
+        SetBackground();
+
+        var blocks = GameObject.FindGameObjectsWithTag("Block");
         for (int i = 0; i < blocks.Length; i++)
         {
             Destroy(blocks[i]);
         }
-       
-        audioSrc = Camera.main.GetComponent<AudioSource>();
-        level = gameData.level;
-        SetMusic();
-        SetBackground();
+
+        var bonuses = GameObject.FindGameObjectsWithTag("Bonus");
+        for (int i = 0; i < bonuses.Length; i++)
+        {
+            Destroy(bonuses[i]);
+        }
+
+        var balls = GameObject.FindGameObjectsWithTag("Ball");
+        for (int i = 0; i < balls.Length; i++)
+        {
+            ballScripts.Remove(balls[i].GetComponent<BallScript>().GetInstanceID());
+            Destroy(balls[i]);
+        }
+
         var yMax = Camera.main.orthographicSize * 0.8f;
         var xMax = Camera.main.orthographicSize * Camera.main.aspect * 0.85f;
         CreateBlocks(bluePrefab, xMax, yMax, level, 8);
@@ -190,7 +208,7 @@ public class PlayerScript : MonoBehaviour
     public void BallDestroyed(int ballId)
     {
         gameData.balls--;
-        Debug.Log(ballScripts.Remove(ballId));
+        ballScripts.Remove(ballId);
         StartCoroutine(BallDestroyedCoroutine());
     }
 
@@ -200,8 +218,13 @@ public class PlayerScript : MonoBehaviour
         if (GameObject.FindGameObjectsWithTag("Block").Length == 0)
         {
             if (level < maxLevel)
+            {
                 gameData.level++;
-            gameManager.SetGameState(GameState.GameOver);
+                StartLevel(true);
+            }
+            else {
+                gameManager.SetGameState(GameState.GameOver);
+            }
         }
     }
 

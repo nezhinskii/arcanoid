@@ -16,8 +16,9 @@ public class BlockScriptB : BlockScript
         rigidbody2d = GetComponent<Rigidbody2D>();
     }
 
-    private void Start()
+    override public void Start()
     {
+        base.Start();
         rigidbody2d.velocity = direction * speed;
     }
 

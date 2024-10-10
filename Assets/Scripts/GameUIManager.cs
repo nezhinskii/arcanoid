@@ -79,7 +79,7 @@ public class GameUIManager : MonoBehaviour
                 if (gameData.points > gameData.topScores[4].score)
                 {
                     gameData.UpdateScores();
-                    UpdateTopScoresUI();
+                    UpdateTopScoresUI(true);
                 }
                 break;
             case GameState.Playing:
@@ -131,15 +131,19 @@ public class GameUIManager : MonoBehaviour
         }
     }
 
-    void UpdateTopScoresUI()
+    void UpdateTopScoresUI(bool newRecord = false)
     {
-        scoresText.text = "Top Scores:\n";
+        scoresText.text = "";
+        if (newRecord) {
+            scoresText.text += "New Highscore!!!\n";
+        }
+        scoresText.text += "Top Scores:\n";
 
         for (int i = 0; i < gameData.topScores.Length; i++)
         {
             var playerScore = gameData.topScores[i];
 
-            if (string.IsNullOrEmpty(playerScore.playerName))
+            if (playerScore.score <= 0)
             {
                 continue;
             }
@@ -152,10 +156,12 @@ public class GameUIManager : MonoBehaviour
     {
         if (gameData.resetOnStart)
             gameData.Load();
-            
+       
         gameData.Reset();
+        gameManager.SetGameState(GameState.MainMenu);
         gameManager.SetGameState(GameState.Playing);
         gameData.playerName = playerNameInput.text;
+        
     }
 
     public void ExitGame()

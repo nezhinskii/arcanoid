@@ -59,7 +59,7 @@ public class GameDataScript : ScriptableObject
 
         for (int i = 0; i < topScores.Length; i++)
         {
-            topScores[i].playerName = PlayerPrefs.GetString("playerName" + i, "");
+            topScores[i].playerName = PlayerPrefs.GetString("playerName" + i, "Player");
             topScores[i].score = PlayerPrefs.GetInt("playerScore" + i, 0);
         }
     }
@@ -72,7 +72,7 @@ public class GameDataScript : ScriptableObject
         {
             topScoresList.Add((topScores[i].playerName, topScores[i].score));
         }
-        topScoresList.Add((playerName, points));
+        topScoresList.Add((playerName == "" ? "Player" : playerName, points));
         topScoresList = topScoresList.OrderByDescending(x => x.scr).ToList();
 
         for (int i = 0; i < topScores.Length; i++)
